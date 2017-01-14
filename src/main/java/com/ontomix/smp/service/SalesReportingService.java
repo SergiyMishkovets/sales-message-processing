@@ -45,10 +45,14 @@ public class SalesReportingService implements ISalesReportingService {
         // Logging
         System.out.println("Reporting Adjustments...");
 
+        // Create sale records store
         List<Sale> saleRecords = new ArrayList<>();
 
         for (Sale sale : sales) {
+
+            // Store sale record
             saleRecords.add(sale);
+
             if (sale.getAdjustment() != null) {
 
                 // Log report
