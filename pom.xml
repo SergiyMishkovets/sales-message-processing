@@ -9,6 +9,10 @@
     <url>https://github.com/ontomix/sales-message-processing</url>
 
     <properties>
+        <!-- Project Dependencies -->
+        <activemq.version>5.14.2</activemq.version>
+        <junit.version>4.11</junit.version>
+
         <!-- Build config -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -33,7 +37,7 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-all</artifactId>
-            <version>5.14.2</version>
+            <version>${activemq.version}</version>
         </dependency>
 
         <!-- Test -->
@@ -41,7 +45,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
-            <scope>test</scope>
+            <scope>${junit.version}</scope>
         </dependency>
     </dependencies>
 
