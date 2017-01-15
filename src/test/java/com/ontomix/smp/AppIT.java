@@ -16,14 +16,14 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Unit Test for Sales Message Processing App
+ * Integration Test for Sales Message Processing App
  * <p>
  * <br>
  * This test case sends a set of randomly generated sale messages
  * to an embedded ActiveMQ message broker, and starts the app to process
  * the messages and log reports.
  */
-public class AppTest {
+public class AppIT {
 
     private static final String BROKER_URL = "tcp://localhost:61616";
     private static final String USERNAME = "admin";
