@@ -6,6 +6,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit Test for SalesMessageProcessingService
@@ -38,32 +44,81 @@ public class SalesMessageProcessingServiceTest {
                 "</Adjustment>" +
                 "</Sale>";
 
-        ISalesMessageProcessingService processingService = new SalesMessageProcessingService();
+        CountDownLatch latch = new CountDownLatch(1);
+        ISalesMessageProcessingService processingService = new SalesMessageProcessingService(latch);
+
         Sale sale1 = processingService.unmarshalSaleMessage(type1Payload);
         Sale sale2 = processingService.unmarshalSaleMessage(type2Payload);
         Sale sale3 = processingService.unmarshalSaleMessage(type3Payload);
 
         Assert.assertNotNull(sale1);
-        Assert.assertEquals(sale1.getProduct(), "APPLE");
-        Assert.assertEquals(sale1.getValue(), new BigDecimal("30.00"));
+        Assert.assertEquals("APPLE", sale1.getProduct());
+        Assert.assertEquals(new BigDecimal("30.00"), sale1.getValue());
 
         Assert.assertNotNull(sale2);
         Assert.assertNotNull(sale2.getOccurrences());
-        Assert.assertEquals(sale2.getProduct(), "ORANGE");
-        Assert.assertEquals(sale2.getValue(), new BigDecimal("10.00"));
-        Assert.assertEquals(sale2.getOccurrences(), 5);
+        Assert.assertEquals("ORANGE", sale2.getProduct());
+        Assert.assertEquals(new BigDecimal("10.00"), sale2.getValue());
+        Assert.assertEquals(5, sale2.getOccurrences());
 
         Assert.assertNotNull(sale3);
         Assert.assertNotNull(sale3.getAdjustment());
-        Assert.assertEquals(sale3.getProduct(), "PEAR");
-        Assert.assertEquals(sale3.getValue(), new BigDecimal("50.00"));
-        Assert.assertEquals(sale3.getAdjustment().getAdjustOperation(), OperationType.ADD);
-        Assert.assertEquals(sale3.getAdjustment().getAdjustValue(), new BigDecimal("10.99"));
+        Assert.assertEquals("PEAR", sale3.getProduct());
+        Assert.assertEquals(new BigDecimal("50.00"), sale3.getValue());
+        Assert.assertEquals(OperationType.ADD, sale3.getAdjustment().getAdjustOperation());
+        Assert.assertEquals(new BigDecimal("10.99"), sale3.getAdjustment().getAdjustValue());
     }
 
     @Test
-    public void storeSaleRecord() throws Exception {
+    public void processSaleRecord() throws Exception {
 
+        // Create SalesPersistenceService
+        ISalesPersistenceService persistenceService = new SalesPersistenceService();
+        // Mock SalesReportingService
+        ISalesReportingService reportingService = mock(SalesReportingService.class);
+        doNothing().when(reportingService).reportSales(any(ArrayList.class));
+        doNothing().when(reportingService).reportAdjustments(any(ArrayList.class));
+
+        ISalesMessageProcessingService processingService = new SalesMessageProcessingService(null, persistenceService, reportingService);
+
+        /*
+         * Store some sales and test that reportingService.reportSales() and
+         * reportingService.reportAdjustments() are getting called
+         */
+        List<Sale> reportSales = new ArrayList<>();
+        List<Sale> reportAdjustments = new ArrayList<>();
+        int countReportSalesInvocation = 0;
+        int countReportAdjustmentsInvocation = 0;
+        for (int i = 0; i < 100; i++) {
+            Sale sale = new Sale();
+            sale.setProduct("Product" + i);
+            sale.setValue(new BigDecimal(10.00).add(BigDecimal.valueOf(1.00)));
+
+            // Hold for reporting
+            reportSales.add(sale);
+            reportAdjustments.add(sale);
+
+            processingService.processSaleRecord(sale);
+
+            int reportSalesSize = reportSales.size();
+            int reportAdjustmentsSize = reportAdjustments.size();
+
+            if (reportSalesSize == 10) {
+                countReportSalesInvocation++;
+                verify(reportingService, times(countReportSalesInvocation)).reportSales(any(ArrayList.class));
+                reportSales.clear();
+            } else {
+                verify(reportingService, times(countReportSalesInvocation)).reportSales(any(ArrayList.class));
+            }
+
+            if (reportAdjustmentsSize >= 50) {
+                countReportAdjustmentsInvocation++;
+                verify(reportingService, times(countReportAdjustmentsInvocation)).reportAdjustments(any(ArrayList.class));
+                reportAdjustments.clear();
+            } else {
+                verify(reportingService, times(countReportAdjustmentsInvocation)).reportAdjustments(any(ArrayList.class));
+            }
+        }
     }
 
 }

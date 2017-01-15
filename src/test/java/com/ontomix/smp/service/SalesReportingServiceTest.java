@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-
 /**
  * Unit Test for SalesReportingService
  */
@@ -87,7 +85,7 @@ public class SalesReportingServiceTest {
 
                 BigDecimal pearSale1TotalValue = pearSale1.getValue().multiply(BigDecimal.valueOf(pearSale1.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
 
-                Assert.assertEquals(pearSale1TotalValue, subTotalValue);
+                Assert.assertEquals(subTotalValue, pearSale1TotalValue);
             }
         });
     }
@@ -194,7 +192,7 @@ public class SalesReportingServiceTest {
                 BigDecimal adjustedApple2Sale = appleSale2.getValue().add(appleSale4.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(appleSale2.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                 BigDecimal adjustedApple3Sale = appleSale3.getValue().add(appleSale4.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(appleSale3.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                 BigDecimal adjustedApple4Sale = appleSale4.getValue().add(appleSale4.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(appleSale4.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
-                Assert.assertEquals(totalAdjustedValue, adjustedApple1Sale.add(adjustedApple2Sale).add(adjustedApple3Sale).add(adjustedApple4Sale).setScale(SCALE, RoundingMode.FLOOR));
+                Assert.assertEquals(adjustedApple1Sale.add(adjustedApple2Sale).add(adjustedApple3Sale).add(adjustedApple4Sale).setScale(SCALE, RoundingMode.FLOOR), totalAdjustedValue);
 
                 // Log report
                 System.out.println("Total Value of Sales after " + sale.getAdjustment().getAdjustOperation() + " adjustment for product " + sale.getProduct() + ": " + totalAdjustedValue);
