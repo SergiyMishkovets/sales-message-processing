@@ -62,7 +62,7 @@ public class AppTest {
     }
 
     @Test
-    public void testMessageIsConsumedandProcessed() throws Exception {
+    public void testMessageIsConsumedAndProcessed() throws Exception {
         Connection connection = null;
         try {
             // Producer
