@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 /**
  * Implementation of ISalesReportingService
  * <p>
- * <br>1. Generating Sales Report
- * <br>2. Generating Adjustment Report
+ * <br>1. Generate Sales Report
+ * <br>2. Generate Adjustment Report
  */
 public class SalesReportingService implements ISalesReportingService {
 
