@@ -49,7 +49,10 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
     @Override
     public void processSaleRecord(Sale sale) {
         // Store the Sale record
-        persistenceService.save(sale);
+        String recordId = persistenceService.save(sale);
+
+        // Logging
+        System.out.println("Sale recorded - Record Id: " + recordId + ", Sale: " + sale);
 
         // Hold record to report sales
         reportSales.add(sale);

@@ -17,7 +17,15 @@ public class SalesPersistenceService implements ISalesPersistenceService {
     private static final Map<String, Sale> SALE_RECORDS = new LinkedHashMap<>();
 
     @Override
-    public void save(Sale sale) {
-        SALE_RECORDS.put(UUID.randomUUID().toString(), sale);
+    public String save(Sale sale) {
+        // Generate an unique record id
+        String id = UUID.randomUUID().toString();
+        SALE_RECORDS.put(id, sale);
+        return id;
+    }
+
+    @Override
+    public Sale find(String recordId) {
+        return SALE_RECORDS.get(recordId);
     }
 }

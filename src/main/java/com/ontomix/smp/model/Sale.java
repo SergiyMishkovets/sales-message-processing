@@ -53,4 +53,14 @@ public class Sale {
     public void setAdjustment(Adjustment adjustment) {
         this.adjustment = adjustment;
     }
+
+    @Override
+    public String toString() {
+        return "Sale{" +
+                "product='" + product + '\'' +
+                ", value=" + value +
+                ", occurrences=" + occurrences +
+                ", adjustment=" + adjustment +
+                '}';
+    }
 }
