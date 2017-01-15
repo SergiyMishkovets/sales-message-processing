@@ -3,6 +3,7 @@ package com.ontomix.smp.service;
 import com.ontomix.smp.model.Sale;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +12,13 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of ISalesReportingService
- *
+ * <p>
  * <br>1. Generating Sales Report
  * <br>2. Generating Adjustment Report
- *
  */
 public class SalesReportingService implements ISalesReportingService {
+
+    private static final int SCALE = 2;
 
     @Override
     public void reportSales(List<Sale> sales) {
@@ -24,18 +26,26 @@ public class SalesReportingService implements ISalesReportingService {
         // Logging
         System.out.println("Reporting Sales...");
 
-        // Create a mapper to compute total value of each sale
-        Function<Sale, BigDecimal> subTotalMapper = sale -> sale.getValue().multiply(BigDecimal.valueOf(sale.getOccurrences()));
-
         // Group sales by product type
         Map<String, List<Sale>> productSales = sales.stream().collect(Collectors.groupingBy(Sale::getProduct));
 
+        // Create a mapper to compute total value of each sale
+        Function<Sale, BigDecimal> subTotalMapper = sale -> sale.getValue().multiply(BigDecimal.valueOf(sale.getOccurrences()));
+
         // Report computed total number and value of sales for each product
-        productSales.forEach((k, v) ->
-                System.out.println("Product: " + k + "; " +
-                        "Number of Sales: " + v.stream().collect(Collectors.summingInt(Sale::getOccurrences)) + "; " +
-                        "Total Value of Sales: " + v.stream().map(subTotalMapper).reduce(BigDecimal.ZERO, BigDecimal::add))
-        );
+        productSales.forEach((k, v) -> {
+
+            // Compute total number of sales
+            int numOfSale = v.stream().collect(Collectors.summingInt(Sale::getOccurrences));
+
+            // Compute total value of sales
+            BigDecimal totalSaleValue = v.stream().map(subTotalMapper).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(SCALE, RoundingMode.FLOOR);
+
+            // Log report
+            System.out.println("Product: " + k + "; " +
+                    "Number of Sales: " + numOfSale + "; " +
+                    "Total Value of Sales: " + totalSaleValue);
+        });
 
     }
 
@@ -45,13 +55,12 @@ public class SalesReportingService implements ISalesReportingService {
         // Logging
         System.out.println("Reporting Adjustments...");
 
-        // Create sale records store
-        List<Sale> saleRecords = new ArrayList<>();
+        List<Sale> adjustSales = new ArrayList<>();
 
         for (Sale sale : sales) {
 
-            // Store sale record
-            saleRecords.add(sale);
+            // Hold sales for adjustment
+            adjustSales.add(sale);
 
             if (sale.getAdjustment() != null) {
 
@@ -65,28 +74,29 @@ public class SalesReportingService implements ISalesReportingService {
 
                 switch (sale.getAdjustment().getAdjustOperation()) {
                     case ADD:
-                        adjustmentMapper = s -> s.getValue().add(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences()));
+                        adjustmentMapper = s -> s.getValue().add(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                         break;
                     case SUBSTRACT:
-                        adjustmentMapper = s -> s.getValue().subtract(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences()));
+                        adjustmentMapper = s -> s.getValue().subtract(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                         break;
                     case MULTIPLY:
-                        adjustmentMapper = s -> s.getValue().multiply(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences()));
+                        adjustmentMapper = s -> s.getValue().multiply(sale.getAdjustment().getAdjustValue()).multiply(BigDecimal.valueOf(s.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                         break;
                     default:
-                        adjustmentMapper = s -> s.getValue().multiply(BigDecimal.valueOf(s.getOccurrences()));
+                        adjustmentMapper = s -> s.getValue().multiply(BigDecimal.valueOf(s.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
                 }
 
-                // Group recorded sales by product type
-                Map<String, List<Sale>> tmpProductSales = saleRecords.stream().collect(Collectors.groupingBy(Sale::getProduct));
+                // Group recorded sales by product type for adjustment
+                Map<String, List<Sale>> tmpProductSales = adjustSales.stream().collect(Collectors.groupingBy(Sale::getProduct));
 
                 // Apply adjustment to each product recorded and log report
                 tmpProductSales.get(sale.getProduct()).forEach(s -> {
 
-                            BigDecimal currentValue = s.getValue().multiply(BigDecimal.valueOf(s.getOccurrences()));
+                            // Compute current recorded sale value
+                            BigDecimal currentValue = s.getValue().multiply(BigDecimal.valueOf(s.getOccurrences())).setScale(SCALE, RoundingMode.FLOOR);
 
                             // Apply the adjustment mapper
-                            BigDecimal adjustedValue = adjustmentMapper.apply(s);
+                            BigDecimal adjustedValue = adjustmentMapper.apply(s).setScale(SCALE, RoundingMode.FLOOR);
 
                             System.out.println("Product: " + s.getProduct() + "; " +
                                     "Number of Sales: " + s.getOccurrences() + "; " +
@@ -96,10 +106,10 @@ public class SalesReportingService implements ISalesReportingService {
                 );
 
                 // Compute total sale value after adjustment for the product
-                BigDecimal totalAjustedValue = tmpProductSales.get(sale.getProduct()).stream().map(adjustmentMapper).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalAdjustedValue = tmpProductSales.get(sale.getProduct()).stream().map(adjustmentMapper).reduce(BigDecimal.ZERO, BigDecimal::add).setScale(SCALE, RoundingMode.FLOOR);
 
                 // Log report
-                System.out.println("Total Value of Sales after " + sale.getAdjustment().getAdjustOperation() + " adjustment for product " + sale.getProduct() + ": " + totalAjustedValue);
+                System.out.println("Total Value of Sales after " + sale.getAdjustment().getAdjustOperation() + " adjustment for product " + sale.getProduct() + ": " + totalAdjustedValue);
 
             }
         }
