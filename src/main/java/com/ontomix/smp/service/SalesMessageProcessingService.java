@@ -2,8 +2,6 @@ package com.ontomix.smp.service;
 
 import com.ontomix.smp.model.Sale;
 
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -15,17 +13,22 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * Implementation of ISalesMessageProcessingService
- *
- * <br>1. Unmarshal XML Sale Message to Sale Object
- * <br>2. Store Sale Records
+ * <p>
+ * <br>1. Unmarshal XML sale message to sale object
+ * <br>2. Store sale record
  * <br>3. Call SalesReportingService to do reporting
- *
  */
 public class SalesMessageProcessingService implements ISalesMessageProcessingService {
 
     private final CountDownLatch latch;
     private final List<Sale> sales = new ArrayList<>();
-    private final ISalesReportingService reportingService;
+
+    private ISalesReportingService reportingService;
+
+    public SalesMessageProcessingService() {
+        super();
+        this.latch = new CountDownLatch(1);
+    }
 
     public SalesMessageProcessingService(CountDownLatch latch) {
         this.latch = latch;
@@ -33,19 +36,15 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
     }
 
     @Override
-    public void process(TextMessage textMessage) throws JMSException, JAXBException {
+    public Sale unmarshalSaleMessage(String msgText) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(Sale.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        StringBuffer msgTextStrBuf = new StringBuffer(msgText);
+        return (Sale) jaxbUnmarshaller.unmarshal(new StreamSource(new StringReader(msgText)));
+    }
 
-        // Get the message type
-        String msgType = textMessage.getJMSType();
-        // Get the message text
-        String msgText = textMessage.getText();
-
-        // Logging
-        System.out.println(msgType + " received: " + msgText);
-
-        // Unmarshal the XML TextMessage to Sale object
-        Sale sale = unmarshal(msgText);
-
+    @Override
+    public void storeSaleRecord(Sale sale) {
         // Store sale record
         sales.add(sale);
 
@@ -57,9 +56,9 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
          */
         if (size % 10 == 0 && size != 0) {
             int fromIdx = 0;
-            int toIdx = size-1;
+            int toIdx = size - 1;
             if (size > 10) {
-                fromIdx = size-1;
+                fromIdx = size - 1;
             }
             reportingService.reportSales(sales.subList(fromIdx, toIdx));
         }
@@ -76,12 +75,5 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
             System.out.println("App is Stopping...");
             latch.countDown();
         }
-    }
-
-    private Sale unmarshal(String msgText) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(Sale.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        StringBuffer msgTextStrBuf = new StringBuffer(msgText);
-        return (Sale) jaxbUnmarshaller.unmarshal(new StreamSource(new StringReader(msgText)));
     }
 }

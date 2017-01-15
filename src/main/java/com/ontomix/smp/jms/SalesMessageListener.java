@@ -1,5 +1,6 @@
 package com.ontomix.smp.jms;
 
+import com.ontomix.smp.model.Sale;
 import com.ontomix.smp.service.ISalesMessageProcessingService;
 import com.ontomix.smp.service.SalesMessageProcessingService;
 
@@ -25,9 +26,21 @@ class SalesMessageListener implements javax.jms.MessageListener {
     public void onMessage(Message message) {
         if (message instanceof TextMessage) {
             TextMessage textMessage = (TextMessage) message;
-            // Processing message
             try {
-                this.salesMessageProcessingServic.process(textMessage);
+                // Get the message type
+                String msgType = textMessage.getJMSType();
+
+                // Get the message text
+                String msgText = textMessage.getText();
+
+                // Logging
+                System.out.println(msgType + " received: " + msgText);
+
+                // Unmarshal to sale object
+                Sale sale = salesMessageProcessingServic.unmarshalSaleMessage(msgText);
+
+                // Record sale
+                salesMessageProcessingServic.storeSaleRecord(sale);
             } catch (JMSException | JAXBException e) {
                 System.out.println("Caught " + e);
                 e.printStackTrace();

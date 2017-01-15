@@ -1,5 +1,7 @@
 package com.ontomix.smp.service;
 
+import com.ontomix.smp.model.Sale;
+
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
@@ -8,5 +10,20 @@ import javax.xml.bind.JAXBException;
  * A Sales Message Processing Service Interface
  */
 public interface ISalesMessageProcessingService {
-    void process(TextMessage textMessage) throws JMSException, JAXBException;
+
+    /**
+     * Unmarshal an XML message to a Sale object
+     *
+     * @param msgText
+     * @return An unmarshalled Sale object
+     * @throws JAXBException
+     */
+    Sale unmarshalSaleMessage(String msgText) throws JAXBException;
+
+    /**
+     * Store Sale Record
+     *
+     * @param sale
+     */
+    void storeSaleRecord(Sale sale);
 }
