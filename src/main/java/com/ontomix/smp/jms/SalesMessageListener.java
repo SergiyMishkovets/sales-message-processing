@@ -36,11 +36,11 @@ class SalesMessageListener implements javax.jms.MessageListener {
                 // Logging
                 System.out.println(msgType + " received: " + msgText);
 
-                // Unmarshal to sale object
+                // Unmarshal to a Sale object
                 Sale sale = salesMessageProcessingService.unmarshalSaleMessage(msgText);
 
-                // Record sale
-                salesMessageProcessingService.storeSaleRecord(sale);
+                // Process the Sale
+                salesMessageProcessingService.processSaleRecord(sale);
             } catch (JMSException | JAXBException e) {
                 System.out.println("Caught " + e);
                 e.printStackTrace();

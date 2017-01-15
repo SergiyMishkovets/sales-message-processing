@@ -19,9 +19,9 @@ public interface ISalesMessageProcessingService {
     Sale unmarshalSaleMessage(String msgText) throws JAXBException;
 
     /**
-     * Store Sale Record
+     * Process a Sale record
      *
      * @param sale
      */
-    void storeSaleRecord(Sale sale);
+    void processSaleRecord(Sale sale);
 }

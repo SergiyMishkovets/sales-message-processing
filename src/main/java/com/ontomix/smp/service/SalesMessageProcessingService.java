@@ -7,8 +7,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -21,18 +20,22 @@ import java.util.concurrent.CountDownLatch;
 public class SalesMessageProcessingService implements ISalesMessageProcessingService {
 
     private final CountDownLatch latch;
-    private final List<Sale> sales = new ArrayList<>();
 
+    private ISalesPersistenceService persistenceService;
     private ISalesReportingService reportingService;
-
-    public SalesMessageProcessingService() {
-        super();
-        this.latch = new CountDownLatch(1);
-    }
+    private List<Sale> reportSales = new ArrayList<>();
+    private List<Sale> reportAdjustments = new ArrayList<>();
 
     public SalesMessageProcessingService(CountDownLatch latch) {
         this.latch = latch;
+        this.persistenceService = new SalesPersistenceService();
         this.reportingService = new SalesReportingService();
+    }
+
+    public SalesMessageProcessingService(CountDownLatch latch, ISalesPersistenceService persistenceService, ISalesReportingService reportingService) {
+        this.latch = latch;
+        this.persistenceService = persistenceService;
+        this.reportingService = reportingService;
     }
 
     @Override
@@ -44,23 +47,26 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
     }
 
     @Override
-    public void storeSaleRecord(Sale sale) {
-        // Store sale record
-        sales.add(sale);
+    public void processSaleRecord(Sale sale) {
+        // Store the Sale record
+        persistenceService.save(sale);
 
-        int size = sales.size();
+        // Hold record to report sales
+        reportSales.add(sale);
+
+        // Hold record to report adjustments
+        reportAdjustments.add(sale);
+
+        int reportSalesSize = reportSales.size();
+        int reportAdjustmentsSize = reportAdjustments.size();
 
         /*
          * After every 10th message received, log a report detailing the
          * number of sales of each product and their total value.
          */
-        if (size % 10 == 0 && size != 0) {
-            int fromIdx = 0;
-            int toIdx = size - 1;
-            if (size > 10) {
-                fromIdx = size - 1;
-            }
-            reportingService.reportSales(sales.subList(fromIdx, toIdx));
+        if (reportSalesSize == 10) {
+            reportingService.reportSales(reportSales);
+            reportSales.clear();
         }
 
         /*
@@ -68,12 +74,17 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
          * messages and log a report of the adjustments that have been
          * made to each sale type while the application was running.
          */
-        if (size == 50) {
-            reportingService.reportAdjustments(sales);
-            // Logging
-            System.out.println("App is pausing...");
-            System.out.println("App is Stopping...");
-            latch.countDown();
+        if (reportAdjustmentsSize >= 50) {
+            reportingService.reportAdjustments(reportAdjustments);
+            reportAdjustments.clear();
+
+            if (latch != null) {
+                // Logging
+                System.out.println("App is pausing...");
+                System.out.println("App is Stopping...");
+                latch.countDown();
+            }
         }
     }
+
 }
