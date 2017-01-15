@@ -2,8 +2,6 @@ package com.ontomix.smp.service;
 
 import com.ontomix.smp.model.Sale;
 
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
 
 /**

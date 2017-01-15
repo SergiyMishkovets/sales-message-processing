@@ -16,10 +16,10 @@ import java.util.concurrent.CountDownLatch;
  */
 class SalesMessageListener implements javax.jms.MessageListener {
 
-    private final ISalesMessageProcessingService salesMessageProcessingServic;
+    private final ISalesMessageProcessingService salesMessageProcessingService;
 
     public SalesMessageListener(CountDownLatch latch) {
-        this.salesMessageProcessingServic = new SalesMessageProcessingService(latch);
+        this.salesMessageProcessingService = new SalesMessageProcessingService(latch);
     }
 
     @Override
@@ -37,10 +37,10 @@ class SalesMessageListener implements javax.jms.MessageListener {
                 System.out.println(msgType + " received: " + msgText);
 
                 // Unmarshal to sale object
-                Sale sale = salesMessageProcessingServic.unmarshalSaleMessage(msgText);
+                Sale sale = salesMessageProcessingService.unmarshalSaleMessage(msgText);
 
                 // Record sale
-                salesMessageProcessingServic.storeSaleRecord(sale);
+                salesMessageProcessingService.storeSaleRecord(sale);
             } catch (JMSException | JAXBException e) {
                 System.out.println("Caught " + e);
                 e.printStackTrace();
