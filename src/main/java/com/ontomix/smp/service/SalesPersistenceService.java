@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Implementation of ISalesPersistenceService
  * <p>
- * A sale records store implemented by a LinkedHashMap
+ * In memory Sale records store implemented by LinkedHashMap
  * </p>
  */
 public class SalesPersistenceService implements ISalesPersistenceService {

@@ -13,8 +13,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Implementation of ISalesMessageProcessingService
  * <p>
- * <br>1. Unmarshal XML sale message to sale object
- * <br>2. Store sale record
+ * <br>1. Unmarshal XML Sale message to Sale object
+ * <br>2. Store Sale record
  * <br>3. Call SalesReportingService to do reporting
  */
 public class SalesMessageProcessingService implements ISalesMessageProcessingService {
