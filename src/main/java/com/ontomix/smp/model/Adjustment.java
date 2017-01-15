@@ -31,4 +31,12 @@ public class Adjustment {
     public void setAdjustValue(BigDecimal adjustValue) {
         this.adjustValue = adjustValue;
     }
+
+    @Override
+    public String toString() {
+        return "Adjustment{" +
+                "adjustOperation=" + adjustOperation +
+                ", adjustValue=" + adjustValue +
+                '}';
+    }
 }

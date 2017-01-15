@@ -8,9 +8,19 @@ import com.ontomix.smp.model.Sale;
 public interface ISalesPersistenceService {
 
     /**
-     * Save a Sale record
+     * Store a Sale record
+     *
      * @param sale
+     * @return An unique record id - UUID
      */
-    void save(Sale sale);
+    String save(Sale sale);
+
+    /**
+     * Retrieve a Sale record by record Id
+     *
+     * @param recordId
+     * @return the recorded Sale
+     */
+    Sale find(String recordId);
 
 }

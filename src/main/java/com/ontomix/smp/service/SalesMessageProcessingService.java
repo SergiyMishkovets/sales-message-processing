@@ -13,8 +13,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Implementation of ISalesMessageProcessingService
  * <p>
- * <br>1. Unmarshal XML sale message to sale object
- * <br>2. Store sale record
+ * <br>1. Unmarshal XML Sale message to Sale object
+ * <br>2. Store Sale record
  * <br>3. Call SalesReportingService to do reporting
  */
 public class SalesMessageProcessingService implements ISalesMessageProcessingService {
@@ -49,7 +49,10 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
     @Override
     public void processSaleRecord(Sale sale) {
         // Store the Sale record
-        persistenceService.save(sale);
+        String recordId = persistenceService.save(sale);
+
+        // Logging
+        System.out.println("Sale recorded - Record Id: " + recordId + ", Sale: " + sale);
 
         // Hold record to report sales
         reportSales.add(sale);
