@@ -89,10 +89,11 @@ Product: TOMATO; Number of Sales: 1; Total Value before Adjustment: 43.98; Total
 Total Value of Sales after SUBSTRACT adjustment for product TOMATO: -74.32
 ```
 ```
-Adjustment instruction received: multiplying 13.19 to each sale recorded for product WATERMELON...
-Product: WATERMELON; Number of Sales: 1; Total Value before Adjustment: 55.24; Total Value after Adjustment: 728.6156
-Product: WATERMELON; Number of Sales: 15; Total Value before Adjustment: 134.85; Total Value after Adjustment: 1778.6715
-Product: WATERMELON; Number of Sales: 1; Total Value before Adjustment: 58.87; Total Value after Adjustment: 776.4953
-Product: WATERMELON; Number of Sales: 1; Total Value before Adjustment: 62.23; Total Value after Adjustment: 820.8137
-Total Value of Sales after MULTIPLY adjustment for product WATERMELON: 4104.5961
+Adjustment instruction received: multiplying 11.24 to each sale recorded for product APPLE...
+Product: APPLE; Number of Sales: 1; Total Value before Adjustment: 91.91; Total Value after Adjustment: 1033.06
+Product: APPLE; Number of Sales: 79; Total Value before Adjustment: 7821.79; Total Value after Adjustment: 87916.91
+Product: APPLE; Number of Sales: 32; Total Value before Adjustment: 1370.88; Total Value after Adjustment: 15408.69
+Product: APPLE; Number of Sales: 1; Total Value before Adjustment: 26.63; Total Value after Adjustment: 299.32
+Product: APPLE; Number of Sales: 1; Total Value before Adjustment: 54.16; Total Value after Adjustment: 608.75
+Total Value of Sales after MULTIPLY adjustment for product APPLE: 105266.73
 ```

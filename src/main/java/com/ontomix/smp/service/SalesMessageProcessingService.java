@@ -16,15 +16,15 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Implementation of ISalesMessageProcessingService
  *
- * <br>1. Unmarshall XML Sale Message to Sale Object
- * <br>2. Call SalesReportingService to do reporting
+ * <br>1. Unmarshal XML Sale Message to Sale Object
+ * <br>2. Store Sale Records
+ * <br>3. Call SalesReportingService to do reporting
  *
  */
 public class SalesMessageProcessingService implements ISalesMessageProcessingService {
 
     private final CountDownLatch latch;
     private final List<Sale> sales = new ArrayList<>();
-    private final List<Sale> reportSales = new ArrayList<>();
     private final ISalesReportingService reportingService;
 
     public SalesMessageProcessingService(CountDownLatch latch) {
@@ -35,8 +35,6 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
     @Override
     public void process(TextMessage textMessage) throws JMSException, JAXBException {
 
-        Sale sale = null;
-
         // Get the message type
         String msgType = textMessage.getJMSType();
         // Get the message text
@@ -46,13 +44,10 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
         System.out.println(msgType + " received: " + msgText);
 
         // Unmarshal the XML TextMessage to Sale object
-        JAXBContext jaxbContext = JAXBContext.newInstance(Sale.class);
-        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-        StringBuffer msgTextStrBuf = new StringBuffer(msgText);
-        sale = (Sale) jaxbUnmarshaller.unmarshal(new StreamSource(new StringReader(msgText)));
+        Sale sale = unmarshal(msgText);
 
+        // Store sale record
         sales.add(sale);
-        reportSales.add(sale);
 
         int size = sales.size();
 
@@ -61,9 +56,12 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
          * number of sales of each product and their total value.
          */
         if (size % 10 == 0 && size != 0) {
-            reportingService.reportSales(reportSales);
-            // Clears the report sales list for next round
-            reportSales.clear();
+            int fromIdx = 0;
+            int toIdx = size-1;
+            if (size > 10) {
+                fromIdx = size-1;
+            }
+            reportingService.reportSales(sales.subList(fromIdx, toIdx));
         }
 
         /*
@@ -78,6 +76,12 @@ public class SalesMessageProcessingService implements ISalesMessageProcessingSer
             System.out.println("App is Stopping...");
             latch.countDown();
         }
+    }
 
+    private Sale unmarshal(String msgText) throws JAXBException {
+        JAXBContext jaxbContext = JAXBContext.newInstance(Sale.class);
+        Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+        StringBuffer msgTextStrBuf = new StringBuffer(msgText);
+        return (Sale) jaxbUnmarshaller.unmarshal(new StreamSource(new StringReader(msgText)));
     }
 }
